@@ -30,15 +30,12 @@ COPY --from=backend-builder /app/backend ./backend
 # Copy frontend build
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Install serve to serve frontend
-RUN npm install -g serve
-
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check (checks backend health endpoint)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start both backend and frontend
-CMD ["sh", "-c", "serve -s frontend/dist -l 5173 & cd backend && node src/server.js"]
+# Start backend (which now serves frontend)
+CMD ["node", "backend/src/server.js"]

@@ -65,15 +65,37 @@ app.get('/api', (req, res) => {
 // Error handling
 app.use((err, req, res, next) => {
   console.error('Error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
     message: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
 
-// 404 handler
-app.use((req, res) => {
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ... (existing middleware)
+
+// Serve frontend static files
+const frontendPath = path.join(__dirname, '../../frontend/dist');
+app.use(express.static(frontendPath));
+
+// API 404 handler (must be registered *before* the catch-all)
+app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
+});
+
+// Examples/Root API handler override for browser navigation
+// (If you want / to still serve API info when not accepting HTML, check Accept header)
+// For now, we'll let specific API routes take precedence (already defined above)
+// and let the catch-all handle the rest for SPA.
+
+// SPA Catch-all handler
+app.get('*', (req, res) => {
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
 app.listen(PORT, '0.0.0.0', () => {
