@@ -31,11 +31,11 @@ COPY --from=backend-builder /app/backend ./backend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Expose port
-EXPOSE 8080
+EXPOSE 3000
 
 # Health check (checks backend health endpoint)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start backend (which now serves frontend)
 CMD ["node", "backend/src/server.js"]
