@@ -10,7 +10,7 @@ lsof -ti:8080 | xargs kill -9 2>/dev/null || true
 
 # Start backend
 echo "Starting backend on port 3000..."
-cd /workspaces/workspaces/backend
+cd backend
 node src/server.js > /tmp/backend.log 2>&1 &
 BACKEND_PID=$!
 echo "Backend PID: $BACKEND_PID"
@@ -21,7 +21,7 @@ sleep 3
 # Test backend
 if curl -s http://localhost:3000/health > /dev/null; then
     echo "✅ Backend is running"
-    echo "   URL: https://3000--019affb8-ef67-7955-a1c6-aa9fc2a6423e.us-east-1-01.gitpod.dev"
+    echo "   URL: https://localhost:3000"
 else
     echo "❌ Backend failed to start"
     echo "   Check logs: tail -f /tmp/backend.log"
@@ -31,16 +31,17 @@ fi
 # Start frontend
 echo ""
 echo "Starting frontend on port 8080..."
-cd /workspaces/workspaces/frontend
-npm run dev > /tmp/frontend.log 2>&1 &
+cd frontend
+pnpm install
+pnpm run dev > /tmp/frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo "Frontend PID: $FRONTEND_PID"
 
 echo ""
 echo "✅ Both services started!"
 echo ""
-echo "Backend:  https://3000--019affb8-ef67-7955-a1c6-aa9fc2a6423e.us-east-1-01.gitpod.dev"
-echo "Frontend: Check the port that Vite selected (usually 8080 or 8081)"
+echo "Backend:  https://localhost:3000"
+echo "Frontend: https://localhost:8080"
 echo ""
 echo "To view logs:"
 echo "  Backend:  tail -f /tmp/backend.log"

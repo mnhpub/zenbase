@@ -14,7 +14,7 @@
 3. Run these commands:
 
 ```bash
-cd /workspaces/workspaces/frontend
+cd /frontend
 npm run dev
 ```
 
@@ -58,11 +58,11 @@ pkill -f "node src/server"
 pkill -f vite
 
 # Start backend
-cd /workspaces/workspaces/backend
+cd /backend
 node src/server.js &
 
 # Start frontend (in a new terminal)
-cd /workspaces/workspaces/frontend
+cd /frontend
 npm run dev
 ```
 

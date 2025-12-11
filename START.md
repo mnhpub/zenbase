@@ -4,7 +4,7 @@
 
 ### Terminal 1 - Backend
 ```bash
-cd /workspaces/workspaces/backend
+cd /backend
 node src/server.js
 ```
 
@@ -14,7 +14,7 @@ The backend will start on port 3000 in mock mode (no Supabase required for demo)
 
 ### Terminal 2 - Frontend  
 ```bash
-cd /workspaces/workspaces/frontend
+cd /frontend
 npm run dev
 ```
 
