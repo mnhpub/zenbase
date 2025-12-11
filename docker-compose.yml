@@ -1,7 +1,19 @@
 version: '3.8'
 
+# Zenbase Multi-Tenant Application
+# Organized for Screwdriver.cd CI/CD pipeline
+
+networks:
+  zenbase-network:
+    driver: bridge
+
+volumes:
+  backend-node-modules:
+  frontend-node-modules:
+
 services:
   backend:
+    container_name: zenbase-backend
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
@@ -9,16 +21,26 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
-      - /app/node_modules
+      - backend-node-modules:/app/node_modules
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=3000
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - CORS_ORIGIN=http://localhost:5173
+      - SUPABASE_URL=${SUPABASE_URL:-https://your-project.supabase.co}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-your-anon-key}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
+    networks:
+      - zenbase-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
     command: npm run dev
 
   frontend:
+    container_name: zenbase-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
@@ -26,11 +48,22 @@ services:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend-node-modules:/app/node_modules
     environment:
-      - VITE_SUPABASE_URL=${SUPABASE_URL}
-      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - VITE_API_URL=http://localhost:3000
+      - NODE_ENV=${NODE_ENV:-development}
+      - VITE_SUPABASE_URL=${SUPABASE_URL:-https://your-project.supabase.co}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-your-anon-key}
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:3000}
+    networks:
+      - zenbase-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
     command: npm run dev
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy

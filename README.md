@@ -125,7 +125,31 @@ npm install
 
 ## Development
 
-### Option 1: Local Development (npm)
+### Option 1: Using Make (Recommended)
+
+```bash
+# Install dependencies
+make install
+
+# Build the application
+make build
+
+# Start with docker-compose
+make up
+
+# View logs
+make logs
+
+# Run health checks
+make health
+
+# Stop services
+make down
+```
+
+See `make help` for all available commands.
+
+### Option 2: Local Development (npm)
 
 Run backend and frontend separately:
 
@@ -141,7 +165,7 @@ npm run dev
 
 Access the app at [http://localhost:5173](http://localhost:5173)
 
-### Option 2: Docker Compose
+### Option 3: Docker Compose
 
 ```bash
 # Create .env file in root with Supabase credentials
@@ -149,7 +173,29 @@ echo "SUPABASE_URL=https://your-project.supabase.co" > .env
 echo "SUPABASE_ANON_KEY=your-anon-key" >> .env
 
 # Start services
-docker-compose up
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+## CI/CD with Screwdriver.cd
+
+Zenbase uses Screwdriver.cd for automated builds and deployments. See [SCREWDRIVER.md](./SCREWDRIVER.md) for detailed documentation.
+
+**Quick commands:**
+```bash
+# Deploy to development
+make deploy-dev
+
+# Deploy to staging
+make deploy-staging
+
+# Deploy to production
+make deploy-prod
 ```
 
 ## Testing Multi-Tenancy
