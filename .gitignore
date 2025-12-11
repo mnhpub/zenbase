@@ -45,3 +45,4 @@ coverage/
 
 # Fly.io
 .fly/
+frontend/node_modules
