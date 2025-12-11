@@ -25,8 +25,8 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Root endpoint - API info
-app.get('/', (req, res) => {
+// Root endpoint - API info moved to /api/info
+app.get('/api/info', (req, res) => {
   res.json({
     name: 'Zenbase API',
     version: '1.0.0',
