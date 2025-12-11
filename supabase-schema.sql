@@ -1,4 +1,4 @@
--- AdFinder Database Schema
+-- Zenbase Database Schema
 -- Run this in your Supabase SQL Editor
 
 -- Enable UUID extension
@@ -100,9 +100,9 @@ $$ LANGUAGE plpgsql;
 
 -- Seed data: Create sample tenants
 INSERT INTO tenants (slug, name, region) VALUES
-  ('seattle', 'Seattle AdFinder', 'Seattle, WA'),
-  ('portland', 'Portland AdFinder', 'Portland, OR'),
-  ('vancouver', 'Vancouver AdFinder', 'Vancouver, BC')
+  ('seattle', 'Seattle Zenbase', 'Seattle, WA'),
+  ('portland', 'Portland Zenbase', 'Portland, OR'),
+  ('vancouver', 'Vancouver Zenbase', 'Vancouver, BC')
 ON CONFLICT (slug) DO NOTHING;
 
 -- Create indexes for performance

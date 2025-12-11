@@ -28,9 +28,9 @@ app.get('/health', (req, res) => {
 // Root endpoint - API info
 app.get('/', (req, res) => {
   res.json({
-    name: 'AdFinder API',
+    name: 'Zenbase API',
     version: '1.0.0',
-    message: 'Multi-tenant regional ad management platform',
+    message: 'Multi-tenant enterprise platform',
     endpoints: {
       health: '/health',
       api: '/api?tenant=TENANT_SLUG',
@@ -56,7 +56,7 @@ app.use('/api/tenant', tenantRoutes);
 // Root endpoint with tenant info
 app.get('/api', (req, res) => {
   res.json({
-    message: 'AdFinder API',
+    message: 'Zenbase API',
     tenant: req.tenant.slug,
     version: '1.0.0'
   });
@@ -77,6 +77,6 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 AdFinder API running on port ${PORT}`);
+  console.log(`🚀 Zenbase API running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

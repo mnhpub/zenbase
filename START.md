@@ -1,4 +1,4 @@
-# Quick Start Guide for Ona Environment
+# Zenbase - Quick Start Guide for Ona Environment
 
 ## Start the Application
 

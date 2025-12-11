@@ -2,7 +2,7 @@ import { supabase } from '../lib/supabase.js';
 
 /**
  * Extract tenant subdomain from request
- * Supports *.adfinder.online wildcard routing
+ * Supports *.zenbase.online wildcard routing
  */
 export function extractTenantFromHost(host) {
   if (!host) return null;
@@ -10,11 +10,11 @@ export function extractTenantFromHost(host) {
   // Remove port if present
   const hostname = host.split(':')[0];
   
-  // Extract subdomain from *.adfinder.online
+  // Extract subdomain from *.zenbase.online
   const parts = hostname.split('.');
   
-  // If hostname is subdomain.adfinder.online, extract subdomain
-  if (parts.length >= 3 && parts[parts.length - 2] === 'adfinder' && parts[parts.length - 1] === 'online') {
+  // If hostname is subdomain.zenbase.online, extract subdomain
+  if (parts.length >= 3 && parts[parts.length - 2] === 'zenbase' && parts[parts.length - 1] === 'online') {
     return parts.slice(0, -2).join('.');
   }
   
@@ -38,7 +38,7 @@ export async function tenantMiddleware(req, res, next) {
     if (!tenantSlug) {
       return res.status(400).json({ 
         error: 'No tenant specified',
-        message: 'Access via subdomain (e.g., seattle.adfinder.online) or ?tenant=slug'
+        message: 'Access via subdomain (e.g., seattle.zenbase.online) or ?tenant=slug'
       });
     }
 
@@ -64,7 +64,7 @@ export async function tenantMiddleware(req, res, next) {
       tenant = {
         id: `mock-${tenantSlug}`,
         slug: tenantSlug,
-        name: `${tenantSlug.charAt(0).toUpperCase() + tenantSlug.slice(1)} AdFinder`,
+        name: `${tenantSlug.charAt(0).toUpperCase() + tenantSlug.slice(1)} Zenbase`,
         region: `${tenantSlug.charAt(0).toUpperCase() + tenantSlug.slice(1)} Region`,
         created_at: new Date().toISOString()
       };

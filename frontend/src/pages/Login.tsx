@@ -60,7 +60,7 @@ export function Login() {
   return (
     <div className="login">
       <div className="login-container">
-        <h1>AdFinder</h1>
+        <h1>Zenbase</h1>
         <h2>{tenant?.name || 'Login'}</h2>
         
         <form onSubmit={handleLogin}>

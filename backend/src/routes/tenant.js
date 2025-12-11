@@ -98,7 +98,7 @@ router.get('/admins', authMiddleware, async (req, res) => {
           role: 'admin',
           elected_at: new Date().toISOString(),
           user: {
-            email: 'admin@adfinder.online'
+            email: 'admin@zenbase.online'
           }
         }
       ];

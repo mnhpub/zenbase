@@ -1,6 +1,6 @@
-# AdFinder
+# Zenbase
 
-Multi-tenant enterprise application for regional ad management with wildcard subdomain routing.
+Multi-tenant enterprise application with wildcard subdomain routing.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Multi-tenant enterprise application for regional ad management with wildcard sub
 
 ## Features
 
-- Multi-tenant architecture with subdomain routing (*.adfinder.online)
+- Multi-tenant architecture with subdomain routing (*.zenbase.online)
 - Row-Level Security (RLS) for tenant data isolation
 - Regional dashboards with tenant-specific data
 - Admin and counsel management per tenant
@@ -163,8 +163,8 @@ Use query parameters to simulate different tenants:
 ### Production (Fly.io)
 
 Subdomains automatically route to tenants:
-- [https://seattle.adfinder.online](https://seattle.adfinder.online)
-- [https://portland.adfinder.online](https://portland.adfinder.online)
+- [https://seattle.zenbase.online](https://seattle.zenbase.online)
+- [https://portland.zenbase.online](https://portland.zenbase.online)
 
 ## Deployment to Fly.io
 
@@ -183,7 +183,7 @@ fly auth login
 ### 3. Create Fly App
 
 ```bash
-fly apps create adfinder
+fly apps create zenbase
 ```
 
 ### 4. Set Secrets
@@ -196,9 +196,9 @@ fly secrets set SUPABASE_ANON_KEY=your-anon-key
 ### 5. Configure Wildcard Domain
 
 ```bash
-# Add wildcard certificate for *.adfinder.online
-fly certs add "*.adfinder.online"
-fly certs add "adfinder.online"
+# Add wildcard certificate for *.zenbase.online
+fly certs add "*.zenbase.online"
+fly certs add "zenbase.online"
 ```
 
 Configure DNS:

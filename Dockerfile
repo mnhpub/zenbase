@@ -1,4 +1,4 @@
-# Multi-stage build for AdFinder
+# Multi-stage build for Zenbase
 FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/frontend

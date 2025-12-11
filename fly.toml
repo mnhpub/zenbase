@@ -1,4 +1,4 @@
-app = "adfinder"
+app = "zenbase"
 primary_region = "sea"
 
 [build]
@@ -16,7 +16,7 @@ primary_region = "sea"
   min_machines_running = 0
   processes = ["app"]
 
-  # Wildcard domain support for *.adfinder.online
+  # Wildcard domain support for *.zenbase.online
   [[http_service.checks]]
     grace_period = "10s"
     interval = "30s"

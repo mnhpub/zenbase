@@ -27,7 +27,7 @@ export async function authMiddleware(req, res, next) {
       // Mock user for demo
       req.user = {
         id: 'mock-user-id',
-        email: 'demo@adfinder.online'
+        email: 'demo@zenbase.online'
       };
       req.accessToken = token;
     }
@@ -60,7 +60,7 @@ export async function optionalAuthMiddleware(req, res, next) {
         // Mock user for demo
         req.user = {
           id: 'mock-user-id',
-          email: 'demo@adfinder.online'
+          email: 'demo@zenbase.online'
         };
         req.accessToken = token;
       }

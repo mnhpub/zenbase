@@ -73,7 +73,7 @@ export function Dashboard() {
   return (
     <div className="dashboard">
       <header>
-        <h1>{tenant?.name || 'AdFinder'} Dashboard</h1>
+        <h1>{tenant?.name || 'Zenbase'} Dashboard</h1>
         <p className="region">Region: {tenant?.region}</p>
       </header>
 
