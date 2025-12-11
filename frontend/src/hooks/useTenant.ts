@@ -5,6 +5,8 @@ interface Tenant {
   slug: string;
   name: string;
   region: string;
+  onboarding_status?: 'pending' | 'enqueued' | 'processing' | 'success' | 'failed';
+  onboarding_error?: string;
 }
 
 interface TenantInfo {

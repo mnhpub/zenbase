@@ -70,12 +70,62 @@ export function Dashboard() {
     );
   }
 
+  // ... (existing imports and interfaces)
+
+  function OnboardingBanner({ status, error }: { status?: string, error?: string }) {
+    if (!status || status === 'success') return null;
+
+    const statusColors = {
+      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      enqueued: 'bg-blue-100 text-blue-800 border-blue-200',
+      processing: 'bg-blue-100 text-blue-800 border-blue-200',
+      failed: 'bg-red-100 text-red-800 border-red-200',
+    };
+
+    const statusText = {
+      pending: 'Onboarding Pending',
+      enqueued: 'Onboarding Queued',
+      processing: 'Onboarding in Progress',
+      failed: 'Onboarding Failed',
+    };
+
+    const colorClass = statusColors[status as keyof typeof statusColors] || statusColors.pending;
+    const title = statusText[status as keyof typeof statusText] || 'Onboarding Status';
+
+    return (
+      <div className={`mb-6 p-4 rounded-md border ${colorClass}`}>
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium">{title}</h3>
+            <p className="mt-1 text-sm opacity-90">
+              {status === 'failed'
+                ? error || 'An error occurred during onboarding. Please try again.'
+                : 'Your tenant environment is being provisioned. Features may be limited.'}
+            </p>
+          </div>
+          {status === 'failed' && (
+            <button
+              className="px-3 py-1 text-sm bg-white border border-red-300 rounded hover:bg-red-50 text-red-700"
+              onClick={() => alert('Retry triggered (mock)')}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ... (inside Dashboard component)
+
   return (
     <div className="dashboard">
       <header>
         <h1>{tenant?.name || 'Zenbase'} Dashboard</h1>
         <p className="region">Region: {tenant?.region}</p>
       </header>
+
+      <OnboardingBanner status={tenant?.onboarding_status} error={tenant?.onboarding_error} />
 
       <div className="user-info">
         <p>Welcome, {user?.email}</p>
