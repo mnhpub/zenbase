@@ -68,6 +68,8 @@ jobs:
       - start-services: |
           echo "Starting services with docker-compose..."
           docker-compose up -d
+          echo "Running Ports:"
+          docker-compose ps
       - health-check: |
           echo "Running health checks..."
           sleep 10

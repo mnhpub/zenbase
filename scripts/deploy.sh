@@ -11,6 +11,8 @@ case $ENVIRONMENT in
   development)
     echo "Starting development environment with docker-compose..."
     docker-compose up -d
+    echo "Running Ports:"
+    docker-compose ps
     ;;
   
   staging)
