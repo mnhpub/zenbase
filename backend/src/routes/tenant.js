@@ -1,5 +1,6 @@
 import express from 'express';
-import { createTenantClient } from '../lib/supabase.js';
+import { DashboardService } from '../services/dashboardService.js';
+import { TenantService } from '../services/tenantService.js';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -62,44 +63,7 @@ router.get('/info', optionalAuthMiddleware, (req, res) => {
  */
 router.get('/dashboard', authMiddleware, async (req, res) => {
   try {
-    let data = [];
-
-    if (createTenantClient(req.tenantId, req.accessToken)) {
-      const client = createTenantClient(req.tenantId, req.accessToken);
-
-      // Fetch tenant-specific dashboard data with RLS applied
-      const result = await client
-        .from('dashboard_data')
-        .select('*')
-        .eq('tenant_id', req.tenantId);
-
-      if (result.error) {
-        return res.status(500).json({ error: result.error.message });
-      }
-      data = result.data || [];
-    } else {
-      // Mock dashboard data for demo
-      data = [
-        {
-          id: '1',
-          metric: 'Active Ads',
-          value: 42,
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: '2',
-          metric: 'Total Views',
-          value: 1337,
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: '3',
-          metric: 'Community Members',
-          value: 89,
-          timestamp: new Date().toISOString()
-        }
-      ];
-    }
+    const data = await DashboardService.getDashboardData(req.tenantId, req.accessToken);
 
     res.json({
       tenant: req.tenant,
@@ -132,34 +96,7 @@ router.get('/dashboard', authMiddleware, async (req, res) => {
  */
 router.get('/admins', authMiddleware, async (req, res) => {
   try {
-    let data = [];
-
-    if (createTenantClient(req.tenantId, req.accessToken)) {
-      const client = createTenantClient(req.tenantId, req.accessToken);
-
-      const result = await client
-        .from('tenant_admins')
-        .select('*, user:users(*)')
-        .eq('tenant_id', req.tenantId);
-
-      if (result.error) {
-        return res.status(500).json({ error: result.error.message });
-      }
-      data = result.data || [];
-    } else {
-      // Mock admins data for demo
-      data = [
-        {
-          id: '1',
-          role: 'admin',
-          elected_at: new Date().toISOString(),
-          user: {
-            email: 'admin@zenbase.online'
-          }
-        }
-      ];
-    }
-
+    const data = await TenantService.getTenantAdmins(req.tenantId, req.accessToken);
     res.json({ admins: data });
   } catch (error) {
     console.error('Admins error:', error);
