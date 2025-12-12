@@ -1,12 +1,19 @@
--- Zenbase Database Schema
--- Run this in your Supabase SQL Editor
+-- Zenbase Initial Schema (Corrected)
+-- Migration ID: 20251210_initial_schema
 
 -- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Enable UUID extension in specific schema
+CREATE SCHEMA IF NOT EXISTS extensions;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA extensions;
+GRANT USAGE ON SCHEMA extensions TO postgres;
+GRANT USAGE ON SCHEMA extensions TO anon;
+GRANT USAGE ON SCHEMA extensions TO authenticated;
+GRANT USAGE ON SCHEMA extensions TO service_role;
 
--- Tenants table
+
+-- 1. Tenants table
 CREATE TABLE IF NOT EXISTS tenants (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   slug TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   region TEXT NOT NULL,
@@ -22,9 +29,34 @@ CREATE POLICY "Anyone can read tenants"
   ON tenants FOR SELECT
   USING (true);
 
--- Dashboard data table
+-- 2. Tenant admins table (Moved up to satisfy dependencies)
+CREATE TABLE IF NOT EXISTS tenant_admins (
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
+  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'admin',
+  elected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  term_ends_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(tenant_id, user_id)
+);
+
+-- Enable RLS on tenant_admins
+ALTER TABLE tenant_admins ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can view admins of their tenant
+CREATE POLICY "Users can view admins of their tenant"
+  ON tenant_admins FOR SELECT
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM tenant_admins 
+      WHERE user_id = auth.uid()
+    )
+  );
+
+-- 3. Dashboard data table
 CREATE TABLE IF NOT EXISTS dashboard_data (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
   tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
   metric TEXT NOT NULL,
   value NUMERIC NOT NULL,
@@ -48,31 +80,6 @@ CREATE POLICY "Users can view their tenant data"
 CREATE POLICY "Admins can insert data for their tenant"
   ON dashboard_data FOR INSERT
   WITH CHECK (
-    tenant_id IN (
-      SELECT tenant_id FROM tenant_admins 
-      WHERE user_id = auth.uid()
-    )
-  );
-
--- Tenant admins table
-CREATE TABLE IF NOT EXISTS tenant_admins (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL DEFAULT 'admin',
-  elected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  term_ends_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(tenant_id, user_id)
-);
-
--- Enable RLS on tenant_admins
-ALTER TABLE tenant_admins ENABLE ROW LEVEL SECURITY;
-
--- Policy: Users can view admins of their tenant
-CREATE POLICY "Users can view admins of their tenant"
-  ON tenant_admins FOR SELECT
-  USING (
     tenant_id IN (
       SELECT tenant_id FROM tenant_admins 
       WHERE user_id = auth.uid()

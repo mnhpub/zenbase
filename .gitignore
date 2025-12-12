@@ -46,3 +46,7 @@ coverage/
 # Fly.io
 .fly/
 frontend/node_modules
+
+# Oban
+worker/deps/
+worker/_build/

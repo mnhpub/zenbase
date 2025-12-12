@@ -14,6 +14,19 @@ CREATE TABLE IF NOT EXISTS public.onboardings (
 );
 CREATE INDEX IF NOT EXISTS idx_onboardings_tenant_id ON public.onboardings(tenant_id);
 
+-- Enable RLS on onboardings
+ALTER TABLE public.onboardings ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Tenants can only view their own onboarding status
+CREATE POLICY "Tenants can view own onboarding"
+  ON public.onboardings FOR SELECT
+  USING (
+    tenant_id IN (
+      SELECT tenant_id FROM public.tenant_admins 
+      WHERE user_id = auth.uid()
+    )
+  );
+
 -- 2. Onboarding Audits Table
 CREATE TABLE IF NOT EXISTS public.onboarding_audits (
   id uuid PRIMARY KEY DEFAULT extensions.uuid_generate_v4(),
