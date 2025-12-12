@@ -1,0 +1,142 @@
+# Zenbase Automations Configuration
+# Integrates with Screwdriver CI for orchestration
+# Manages development environment and CI/CD workflows
+
+tasks:
+    install:
+        name: Install Dependencies
+        description: Install backend and frontend dependencies
+        command: |
+            echo "📦 Installing dependencies..."
+            make install
+        triggeredBy:
+            - manual
+            - postEnvironmentStart
+
+    build:
+        name: Build Application
+        description: Build the application using build script
+        command: |
+            echo "🔨 Building application..."
+            make build
+        triggeredBy:
+            - manual
+
+    test:
+        name: Run Tests
+        description: Run tests with docker-compose
+        command: |
+            echo "🧪 Running tests..."
+            make test
+        triggeredBy:
+            - manual
+
+    lint:
+        name: Lint Code
+        description: Run ESLint on frontend code
+        command: |
+            echo "🔍 Linting code..."
+            cd frontend && npm run lint
+        triggeredBy:
+            - manual
+
+    validate:
+        name: Validate Configuration
+        description: Validate docker-compose configuration
+        command: |
+            echo "✅ Validating configuration..."
+            make validate
+        triggeredBy:
+            - manual
+
+    health-check:
+        name: Health Check
+        description: Run health checks on services
+        command: |
+            echo "🏥 Running health checks..."
+            make health
+        triggeredBy:
+            - manual
+
+    # Screwdriver CI integration tasks
+    sd-build:
+        name: Screwdriver Build
+        description: Screwdriver CI build step
+        command: |
+            echo "🔨 Running Screwdriver build..."
+            make sd-build
+        triggeredBy:
+            - manual
+
+    sd-test:
+        name: Screwdriver Test
+        description: Screwdriver CI test step
+        command: |
+            echo "🧪 Running Screwdriver tests..."
+            make sd-test
+        triggeredBy:
+            - manual
+
+    sd-deploy:
+        name: Screwdriver Deploy
+        description: Screwdriver CI deploy step
+        command: |
+            echo "🚀 Running Screwdriver deploy..."
+            make sd-deploy
+        triggeredBy:
+            - manual
+
+services:
+    backend:
+        name: Backend API
+        description: Express.js backend API server
+        commands:
+            start: |
+                cd backend
+                export NODE_ENV=development
+                export PORT=3000
+                export SUPABASE_URL=${SUPABASE_URL}
+                export SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+                export CORS_ORIGIN=http://localhost:5173
+                npm run dev
+            ready: |
+                max_attempts=30
+                attempt=0
+                while [ $attempt -lt $max_attempts ]; do
+                    if curl -f http://localhost:3000/health 2>/dev/null; then
+                        echo "✅ Backend service is ready"
+                        exit 0
+                    fi
+                    attempt=$((attempt + 1))
+                    sleep 1
+                done
+                echo "❌ Backend service failed to start"
+                exit 1
+        triggeredBy:
+            - manual
+
+    frontend:
+        name: Frontend Application
+        description: React + Vite frontend application
+        commands:
+            start: |
+                cd frontend
+                export VITE_SUPABASE_URL=${SUPABASE_URL}
+                export VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+                export VITE_API_URL=http://localhost:3000
+                npm run dev
+            ready: |
+                max_attempts=30
+                attempt=0
+                while [ $attempt -lt $max_attempts ]; do
+                    if curl -f http://localhost:5173 2>/dev/null; then
+                        echo "✅ Frontend service is ready"
+                        exit 0
+                    fi
+                    attempt=$((attempt + 1))
+                    sleep 1
+                done
+                echo "❌ Frontend service failed to start"
+                exit 1
+        triggeredBy:
+            - manual

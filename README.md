@@ -2,6 +2,11 @@
 
 Multi-tenant enterprise application with wildcard subdomain routing.
 
+## Docs
+
+- Ona Agent guide: [AGENTS.md](AGENTS.md)
+- Secrets configuration: [docs/secrets/README.md](docs/secrets/README.md)
+
 ## Architecture
 
 - **Frontend**: React + TypeScript + Vite
