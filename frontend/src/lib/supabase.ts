@@ -8,7 +8,7 @@ const getEnv = (key: string): string => {
   return value;
 };
 
-const supabaseUrl = getEnv('SUPABASE_URL');
-const supabaseAnonKey = getEnv('SUPABASE_ANON_KEY');
+const supabaseUrl = getEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
