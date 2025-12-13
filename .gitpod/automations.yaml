@@ -121,9 +121,9 @@ services:
         commands:
             start: |
                 cd frontend
-                export SUPABASE_URL=${SUPABASE_URL}
-                export SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-                export API_URL=http://localhost:3000
+                export VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+                export VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+                export VITE_API_URL=http://localhost:3000
                 npm run dev
             ready: |
                 max_attempts=30
