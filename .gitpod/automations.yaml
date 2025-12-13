@@ -3,6 +3,16 @@
 # Manages development environment and CI/CD workflows
 
 tasks:
+    stg:
+        name: Make Stage
+        description: Make Stage
+        command: |
+            echo "📦 Make Stage..."
+            make stg
+        triggeredBy:
+            - manual
+            - postEnvironmentStart
+
     install:
         name: Install Dependencies
         description: Install backend and frontend dependencies
@@ -11,7 +21,6 @@ tasks:
             make install
         triggeredBy:
             - manual
-            - postEnvironmentStart
 
     build:
         name: Build Application

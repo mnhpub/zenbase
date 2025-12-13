@@ -30,6 +30,12 @@ up: ## Start services with docker-compose
 	@echo "Running Ports:"
 	@docker-compose ps
 
+stg: ## Make Stage
+	@echo "🐳 Starting services with docker-compose..."
+	docker-compose up -d
+	@echo "Running Ports:"
+	@docker-compose ps
+
 down: ## Stop docker-compose services
 	@echo "🛑 Stopping services..."
 	docker-compose down
