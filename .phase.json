@@ -1,0 +1,8 @@
+{
+  "version": "2",
+  "phaseApp": "zenbase.online",
+  "appId": "d8b37800-d309-46f1-8609-cccf828ffda4",
+  "defaultEnv": "Development",
+  "envId": "686fd46c-2f9a-476b-9fca-920a48d97692",
+  "monorepoSupport": true
+}
