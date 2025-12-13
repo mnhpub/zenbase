@@ -2,18 +2,11 @@
 
 Multi-tenant enterprise application with wildcard subdomain routing.
 
-## Docs
-
-- Ona Agent guide: [AGENTS.md](AGENTS.md)
-- Secrets configuration: [docs/secrets/README.md](docs/secrets/README.md)
-
 ## Architecture
 
-- **Frontend**: React + TypeScript + Vite
-- **Backend**: Node.js + Express
-- **Database**: Supabase (PostgreSQL with RLS)
-- **Auth**: Supabase Auth
-- **Infrastructure**: Fly.io (production), Ona (staging & test), Docker Compose (development)
+- **Frontend**: React/TS/Vite
+- **Backend**: Node.js/Express
+- **Database**: PG/RLS
 
 ## Features
 
@@ -21,7 +14,6 @@ Multi-tenant enterprise application with wildcard subdomain routing.
 - Row-Level Security (RLS) for tenant data isolation
 - Regional dashboards with tenant-specific data
 - Admin and counsel management per tenant
-- Supabase authentication
 
 ## Development
 
@@ -47,112 +39,36 @@ make down
 
 See `make help` for all available commands.
 
-### Option 2: Local Development (npm)
-
-Run backend and frontend separately:
-
-```bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend
-cd frontend
-npm run dev
-```
-
-Access the app at [http://localhost:5173](http://localhost:5173)
-
-### Option 3: Docker Compose
-
-```bash
-# Create .env file in root with Supabase credentials
-echo "SUPABASE_URL=https://your-project.supabase.co" > .env
-echo "SUPABASE_ANON_KEY=your-anon-key" >> .env
-
-# Start services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
 ## CI/CD with Screwdriver.cd
 
 Zenbase uses Screwdriver.cd for automated builds and deployments. See [SCREWDRIVER.md](./SCREWDRIVER.md) for detailed documentation.
-
-**Quick commands:**
-```bash
-# Deploy to development
-make deploy-dev
-
-# Deploy to staging
-make deploy-staging
-
-# Deploy to production
-make deploy-prod
-```
-
-## Testing Multi-Tenancy
-
-### Local Development
-
-Use query parameters to simulate different tenants:
-- [http://localhost:5173?tenant=seattle](http://localhost:5173?tenant=seattle)
-- [http://localhost:5173?tenant=portland](http://localhost:5173?tenant=portland)
 
 ### Production (Fly.io)
 
 Subdomains automatically route to tenants:
 - [https://seattle.zenbase.online](https://seattle.zenbase.online)
 - [https://portland.zenbase.online](https://portland.zenbase.online)
+- [http://localhost:5173?tenant=seattle](http://localhost:5173?tenant=seattle)
+- [http://localhost:5173?tenant=portland](http://localhost:5173?tenant=portland)
 
-## Deployment to Fly.io
 
-### 1. Install Fly CLI
+### 2. Local Development
 
-```bash
-curl -L https://fly.io/install.sh | sh
 ```
-
-### 2. Login to Fly.io
-
-```bash
-fly auth login
-```
-
-### 3. Create Fly App
-
-```bash
-fly apps create zenbase
+phase auth
+make up
 ```
 
 ### 4. Set Secrets
 
-```bash
-fly secrets set SUPABASE_URL=https://your-project.supabase.co
-fly secrets set SUPABASE_ANON_KEY=your-anon-key
-```
+Secrets are managed.
 
-### 5. Configure Wildcard Domain
+### 5. Maintain Wildcard Domain
 
 ```bash
-# Add wildcard certificate for *.zenbase.online
+# Wildcard certs for *.zenbase.online
 fly certs add "*.zenbase.online"
 fly certs add "zenbase.online"
-```
-
-Configure DNS:
-- Add A record: `@` → Fly.io IP
-- Add A record: `*` → Fly.io IP
-
-### 6. Deploy
-
-```bash
-fly deploy
 ```
 
 ## Project Structure
@@ -212,7 +128,7 @@ Tenant isolation is enforced at multiple levels:
 
 ## Contributing
 
-This project is built on Ona (Gitpod) ephemeral environments, enabling rapid development and testing.
+This project utilizes devcontainer ephemeral environments, enabling rapid development and testing.
 
 ## License
 
