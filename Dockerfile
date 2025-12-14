@@ -1,6 +1,34 @@
 # syntax = docker/dockerfile:1
+
+# Fly secrets helper stages
+FROM flyio/flyctl:latest as flyio
+FROM debian:bullseye-slim as fly-secrets
+
+RUN apt-get update; apt-get install -y ca-certificates jq
+
+COPY <<"EOF" /srv/deploy.sh
+#!/bin/bash
+deploy=(flyctl deploy)
+touch /srv/.secrets
+
+while read -r secret; do
+  echo "export ${secret}=${!secret}" >> /srv/.secrets
+  deploy+=(--build-secret "${secret}=${!secret}")
+done < <(flyctl secrets list --json | jq -r ".[].name")
+
+deploy+=(--build-secret "ALL_SECRETS=$(base64 --wrap=0 /srv/.secrets)")
+${deploy[@]}
+EOF
+
+RUN chmod +x /srv/deploy.sh
+
+COPY --from=flyio /flyctl /usr/bin
+
 # Multi-stage build for Zenbase
 FROM node:20-alpine AS frontend-builder
+
+# Provide flyctl binary for optional use
+COPY --from=flyio /flyctl /usr/bin
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
@@ -31,6 +59,8 @@ COPY backend/ ./
 
 # Final production stage
 FROM node:20-alpine
+# Provide flyctl binary in final image (optional)
+COPY --from=flyio /flyctl /usr/bin
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
