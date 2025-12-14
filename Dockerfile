@@ -48,7 +48,7 @@ RUN --mount=type=secret,id=ALL_SECRETS \
   sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm run build'
 
 # Backend stage
-FROM node:20-alpine AS backend-builder
+# FROM node:20-alpine AS backend-builder
 
 WORKDIR /app/backend
 
@@ -58,7 +58,7 @@ RUN npm ci --only=production
 COPY backend/ ./
 
 # Final production stage
-FROM node:20-alpine
+# FROM node:20-alpine
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
