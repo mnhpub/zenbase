@@ -10,13 +10,13 @@ COPY .phase.json ./
 WORKDIR /app/frontend
 COPY frontend/package*.json ./
 
-RUN --mount=type=secret,id=ALL_SECRETS,required=true \
-  sh -lc '. /run/secrets/ALL_SECRETS && npm ci'
+RUN --mount=type=secret,id=ALL_SECRETS \
+  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; npm ci'
 
 COPY frontend/ ./
 
-RUN --mount=type=secret,id=ALL_SECRETS,required=true \
-  sh -lc '. /run/secrets/ALL_SECRETS && phase run --app "zenbase.online" --env "production" npm run build'
+RUN --mount=type=secret,id=ALL_SECRETS \
+  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm run build'
 
 # Backend stage
 FROM node:20-alpine AS backend-builder
@@ -24,8 +24,8 @@ FROM node:20-alpine AS backend-builder
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN --mount=type=secret,id=ALL_SECRETS,required=true \
-  sh -lc '. /run/secrets/ALL_SECRETS && npm ci --only=production'
+RUN --mount=type=secret,id=ALL_SECRETS \
+  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; npm ci --only=production'
 
 COPY backend/ ./
 
