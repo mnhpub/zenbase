@@ -1,3 +1,4 @@
+# syntax = docker/dockerfile:1
 # Multi-stage build for Zenbase
 FROM node:20-alpine AS frontend-builder
 
@@ -14,14 +15,20 @@ WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
 
-RUN npm ci
+RUN --mount=type=secret,id=ALL_SECRETS,required=true \
+  sh -lc '. /run/secrets/ALL_SECRETS && npm ci'
 
 COPY frontend/ ./
 
+<<<<<<< HEAD
 # Use PHASE_SERVICE_TOKEN for authentication during build
 RUN --mount=type=secret,id=phase_token \
     PHASE_SERVICE_TOKEN=$(cat /run/secrets/phase_token 2>/dev/null || echo "$PHASE_SERVICE_TOKEN") \
     phase run --app "zenbase.online" --env "production" npm run build
+=======
+RUN --mount=type=secret,id=ALL_SECRETS,required=true \
+  sh -lc '. /run/secrets/ALL_SECRETS && phase run --app "zenbase.online" --env "production" npm run build'
+>>>>>>> ac48c2d (feat: update Dockerfile to use secret management for npm install commands in frontend and backend stages)
 
 # Backend stage
 FROM node:20-alpine AS backend-builder
@@ -29,7 +36,8 @@ FROM node:20-alpine AS backend-builder
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm ci --only=production
+RUN --mount=type=secret,id=ALL_SECRETS,required=true \
+  sh -lc '. /run/secrets/ALL_SECRETS && npm ci --only=production'
 
 COPY backend/ ./
 
