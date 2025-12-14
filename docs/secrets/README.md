@@ -25,6 +25,7 @@ This guide documents all required environment variables and how to provide them 
 
 ### CI/CD and Deployment
 - `FLY_API_TOKEN` (Fly.io deployments in Screwdriver)
+- `PHASE_SERVICE_TOKEN` (Phase secrets management for build-time and runtime)
 
 ## Where They’re Used
 
@@ -98,7 +99,24 @@ Use Fly Secrets instead of plain env variables:
 ```bash
 fly secrets set SUPABASE_URL="https://your-project.supabase.co"
 fly secrets set SUPABASE_ANON_KEY="your-anon-key"
+fly secrets set PHASE_SERVICE_TOKEN="your-phase-service-token"
 ```
+
+### Deploying with Phase Secrets
+
+The frontend build requires Phase to inject environment variables at build time. Deploy using:
+
+```bash
+# Ensure PHASE_SERVICE_TOKEN is set in your environment
+export PHASE_SERVICE_TOKEN="your-phase-service-token"
+
+# Deploy with build secret
+fly deploy --remote-only --build-secret phase_token="$PHASE_SERVICE_TOKEN"
+
+# Or use the deploy script
+./scripts/deploy.sh production
+```
+
 If your worker runs as a separate service, set `DATABASE_URL` for it as well.
 
 ## Security Guidance
@@ -111,6 +129,6 @@ If your worker runs as a separate service, set `DATABASE_URL` for it as well.
 ## Quick Reference
 
 - Backend required: `SUPABASE_URL`, `SUPABASE_ANON_KEY`
-- Frontend required: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- Frontend required: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (injected by Phase at build time)
 - Worker required: `DATABASE_URL`
-- Deployments: `FLY_API_TOKEN` (CI), Fly Secrets for runtime values
+- Deployments: `FLY_API_TOKEN` (CI), `PHASE_SERVICE_TOKEN` (build-time), Fly Secrets for runtime values

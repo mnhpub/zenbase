@@ -21,7 +21,11 @@ case $ENVIRONMENT in
       echo "❌ FLY_API_TOKEN not set"
       exit 1
     fi
-    fly deploy --config fly.staging.toml --remote-only
+    if [ -z "$PHASE_SERVICE_TOKEN" ]; then
+      echo "❌ PHASE_SERVICE_TOKEN not set"
+      exit 1
+    fi
+    fly deploy --config fly.staging.toml --remote-only --build-secret phase_token="$PHASE_SERVICE_TOKEN"
     ;;
   
   production)
@@ -30,7 +34,11 @@ case $ENVIRONMENT in
       echo "❌ FLY_API_TOKEN not set"
       exit 1
     fi
-    fly deploy --remote-only
+    if [ -z "$PHASE_SERVICE_TOKEN" ]; then
+      echo "❌ PHASE_SERVICE_TOKEN not set"
+      exit 1
+    fi
+    fly deploy --remote-only --build-secret phase_token="$PHASE_SERVICE_TOKEN"
     ;;
   
   *)

@@ -1,6 +1,9 @@
 # Multi-stage build for Zenbase
 FROM node:20-alpine AS frontend-builder
 
+# Accept PHASE_SERVICE_TOKEN as build secret
+ARG PHASE_SERVICE_TOKEN
+
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
 WORKDIR /app
@@ -15,7 +18,10 @@ RUN npm ci
 
 COPY frontend/ ./
 
-RUN phase run --app "zenbase.online" --env "production" npm run build
+# Use PHASE_SERVICE_TOKEN for authentication during build
+RUN --mount=type=secret,id=phase_token \
+    PHASE_SERVICE_TOKEN=$(cat /run/secrets/phase_token 2>/dev/null || echo "$PHASE_SERVICE_TOKEN") \
+    phase run --app "zenbase.online" --env "production" npm run build
 
 # Backend stage
 FROM node:20-alpine AS backend-builder
