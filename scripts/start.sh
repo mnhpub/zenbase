@@ -7,7 +7,7 @@ npm start &
 BACKEND_PID=$!
 
 # Wait for backend health
-HEALTH_URL="http://localhost:3000/health"
+HEALTH_URL="http://0.0.0.0:3000/health"
 MAX_RETRIES=60
 SLEEP_SECONDS=1
 

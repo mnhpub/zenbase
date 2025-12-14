@@ -5,6 +5,12 @@
 FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
+RUN apt-get update; apt-get install -y ca-certificates jq
+
+# Phase
+ENV VERSION=<1.21.1>
+RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version $VERSION
+
 # Backend deps
 COPY backend/package.json backend/package-lock.json ./backend/
 RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
