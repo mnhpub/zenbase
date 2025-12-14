@@ -36,8 +36,8 @@ ENV NODE_ENV=production
 COPY --from=deps /app/backend/node_modules /app/backend/node_modules
 COPY --from=deps /app/frontend/node_modules /app/frontend/node_modules
 
-# Copy built assets
-COPY --from=build /app/backend/dist /app/backend/dist
+# Copy backend source (no build output for Node backend)
+COPY --from=build /app/backend/src /app/backend/src
 COPY --from=build /app/frontend/dist /app/frontend/dist
 
 # Copy minimal app metadata for npm start scripts
