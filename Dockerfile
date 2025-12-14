@@ -2,17 +2,12 @@
 # Multi-stage build for Zenbase
 FROM node:20-alpine AS frontend-builder
 
-# Accept PHASE_SERVICE_TOKEN as build secret
-ARG PHASE_SERVICE_TOKEN
-
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
 WORKDIR /app
-
 COPY .phase.json ./
 
 WORKDIR /app/frontend
-
 COPY frontend/package*.json ./
 
 RUN --mount=type=secret,id=ALL_SECRETS,required=true \
@@ -20,15 +15,8 @@ RUN --mount=type=secret,id=ALL_SECRETS,required=true \
 
 COPY frontend/ ./
 
-<<<<<<< HEAD
-# Use PHASE_SERVICE_TOKEN for authentication during build
-RUN --mount=type=secret,id=phase_token \
-    PHASE_SERVICE_TOKEN=$(cat /run/secrets/phase_token 2>/dev/null || echo "$PHASE_SERVICE_TOKEN") \
-    phase run --app "zenbase.online" --env "production" npm run build
-=======
 RUN --mount=type=secret,id=ALL_SECRETS,required=true \
   sh -lc '. /run/secrets/ALL_SECRETS && phase run --app "zenbase.online" --env "production" npm run build'
->>>>>>> ac48c2d (feat: update Dockerfile to use secret management for npm install commands in frontend and backend stages)
 
 # Backend stage
 FROM node:20-alpine AS backend-builder
@@ -65,4 +53,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start backend (which now serves frontend)
-CMD ["sh", "-c", "phase run --app \"zenbase.online\" --env \"development\" node backend/src/server.js"]
+CMD ["sh", "-c", "phase run --app \"zenbase.online\" --env \"production\" node backend/src/server.js"]
