@@ -1,8 +1,9 @@
 # syntax = docker/dockerfile:1
 
 # Fly secrets helper stages
-FROM flyio/flyctl:latest as flyio
-FROM debian:bullseye-slim as fly-secrets
+FROM --platform=linux/amd64 flyio/flyctl:latest AS flyio
+
+FROM debian:bullseye-slim AS fly-secrets
 
 RUN apt-get update; apt-get install -y ca-certificates jq
 
@@ -39,7 +40,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 
 RUN --mount=type=secret,id=ALL_SECRETS \
-  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; npm ci'
+  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm ci'
 
 COPY frontend/ ./
 
@@ -53,7 +54,7 @@ WORKDIR /app/backend
 
 COPY backend/package*.json ./
 RUN --mount=type=secret,id=ALL_SECRETS \
-  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; npm ci --only=production'
+  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm ci --only=production'
 
 COPY backend/ ./
 
