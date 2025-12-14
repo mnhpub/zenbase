@@ -1,84 +1,59 @@
-# syntax = docker/dockerfile:1
+# Root production Dockerfile for backend + frontend
+# Scout-recommended base: node:22-alpine
 
-# Fly secrets helper stages
-FROM --platform=linux/amd64 flyio/flyctl:latest AS flyio
-
-FROM debian:bullseye-slim AS fly-secrets
-
-RUN apt-get update; apt-get install -y ca-certificates jq
-
-COPY <<"EOF" /srv/deploy.sh
-#!/bin/bash
-deploy=(flyctl deploy)
-touch /srv/.secrets
-
-while read -r secret; do
-  echo "export ${secret}=${!secret}" >> /srv/.secrets
-  deploy+=(--build-secret "${secret}=${!secret}")
-done < <(flyctl secrets list --json | jq -r ".[].name")
-
-deploy+=(--build-secret "ALL_SECRETS=$(base64 --wrap=0 /srv/.secrets)")
-${deploy[@]}
-EOF
-
-RUN chmod +x /srv/deploy.sh
-
-COPY --from=flyio /flyctl /usr/bin
-
-# Multi-stage build for Zenbase
-# FROM node:20-alpine AS frontend-builder
-
-# Provide flyctl binary for optional use
-# COPY --from=flyio /flyctl /usr/bin
-
-RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
-
-WORKDIR /app
-COPY .phase.json ./
-
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-
-RUN --mount=type=secret,id=ALL_SECRETS \
-  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm ci'
-
-COPY frontend/ ./
-
-RUN --mount=type=secret,id=ALL_SECRETS \
-  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm run build'
-
-# Backend stage
-# FROM node:20-alpine AS backend-builder
-
-WORKDIR /app/backend
-
-COPY backend/package*.json ./
-RUN npm ci --only=production
-
-COPY backend/ ./
-
-# Final production stage
-# FROM node:20-alpine
-
-RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
-
+# -------- deps (runtime deps only) --------
+FROM node:22-alpine AS deps
 WORKDIR /app
 
-# Copy Phase config
-COPY .phase.json ./
+# Backend deps
+COPY backend/package.json backend/package-lock.json ./backend/
+RUN --mount=type=cache,target=/root/.npm cd backend && npm ci --omit=dev
 
-# Copy backend
-COPY --from=backend-builder /app/backend ./backend
+# Frontend deps
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+RUN --mount=type=cache,target=/root/.npm cd frontend && npm ci --omit=dev
 
-# Copy frontend build
-COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+# -------- build (dev deps + build outputs) --------
+FROM deps AS build
+WORKDIR /app
 
-# Expose port
-EXPOSE 3000
+# Copy sources
+COPY backend ./backend
+COPY frontend ./frontend
 
-# Health check (checks backend health endpoint)
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Backend build (ensure dev deps available during build)
+RUN --mount=type=cache,target=/root/.npm cd backend && npm ci && npm run build
 
-# Start backend (which now serves frontend)
-CMD ["node", "backend/src/server.js"]
+# Frontend build
+RUN --mount=type=cache,target=/root/.npm cd frontend && npm ci && npm run build
+
+# -------- runtime (single container runs both) --------
+FROM node:22-alpine AS runtime
+WORKDIR /app
+ENV NODE_ENV=production
+
+# Copy runtime deps
+COPY --from=deps /app/backend/node_modules /app/backend/node_modules
+COPY --from=deps /app/frontend/node_modules /app/frontend/node_modules
+
+# Copy built assets
+COPY --from=build /app/backend/dist /app/backend/dist
+COPY --from=build /app/frontend/dist /app/frontend/dist
+
+# Copy minimal app metadata for npm start scripts
+COPY backend/package.json /app/backend/package.json
+COPY frontend/package.json /app/frontend/package.json
+
+# Copy start script to orchestrate bring-up order
+COPY scripts/start.sh /app/scripts/start.sh
+RUN chmod +x /app/scripts/start.sh
+
+# Install a lightweight static server for frontend
+RUN npm install -g serve
+
+# Expose only frontend on 80 (and optionally 443 for TLS termination upstream)
+EXPOSE 80
+EXPOSE 443
+
+# Start backend first, wait for health, then start frontend
+CMD ["/app/scripts/start.sh"]
