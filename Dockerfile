@@ -2,16 +2,18 @@
 # Scout-recommended base: node:22-alpine
 
 # -------- deps (runtime deps only) --------
-FROM node:22-alpine AS deps
+FROM node:22-alpine@sha256:6e6bd115b0988e62c4ad262e3e19134cab0fc800f4c9f5e6a9fa1a84c9c6eef8 AS deps
 WORKDIR /app
 
 # Backend deps
 COPY backend/package.json backend/package-lock.json ./backend/
-RUN --mount=type=cache,target=/root/.npm cd backend && npm ci --omit=dev
+RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
+	sh -lc 'cd backend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci --omit=dev'
 
 # Frontend deps
 COPY frontend/package.json frontend/package-lock.json ./frontend/
-RUN --mount=type=cache,target=/root/.npm cd frontend && npm ci --omit=dev
+RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
+	sh -lc 'cd frontend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci --omit=dev'
 
 # -------- build (dev deps + build outputs) --------
 FROM deps AS build
@@ -22,13 +24,15 @@ COPY backend ./backend
 COPY frontend ./frontend
 
 # Backend build (ensure dev deps available during build)
-RUN --mount=type=cache,target=/root/.npm cd backend && npm ci && npm run build
+RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
+	sh -lc 'cd backend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci && npm run build'
 
 # Frontend build
-RUN --mount=type=cache,target=/root/.npm cd frontend && npm ci && npm run build
+RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
+	sh -lc 'cd frontend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci && npm run build'
 
 # -------- runtime (single container runs both) --------
-FROM node:22-alpine AS runtime
+FROM node:22-alpine@sha256:6e6bd115b0988e62c4ad262e3e19134cab0fc800f4c9f5e6a9fa1a84c9c6eef8 AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
