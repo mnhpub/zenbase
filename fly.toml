@@ -7,7 +7,6 @@ primary_region = "sjc"
 [env]
   NODE_ENV = "production"
   PORT = "3000"
-  PHASE_SERVICE_TOKEN "$PHASE_SERVICE_TOKEN"
 
 [http_service]
   internal_port = 3000
