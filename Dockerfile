@@ -53,15 +53,12 @@ FROM node:20-alpine AS backend-builder
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN --mount=type=secret,id=ALL_SECRETS \
-  sh -lc 'if [ -f /run/secrets/ALL_SECRETS ]; then . /run/secrets/ALL_SECRETS; fi; phase run --app "zenbase.online" --env "production" npm ci --only=production'
+RUN npm ci --only=production
 
 COPY backend/ ./
 
 # Final production stage
 FROM node:20-alpine
-# Provide flyctl binary in final image (optional)
-COPY --from=flyio /flyctl /usr/bin
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
@@ -84,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start backend (which now serves frontend)
-CMD ["sh", "-c", "phase run --app \"zenbase.online\" --env \"production\" node backend/src/server.js"]
+CMD ["node", "backend/src/server.js"]
