@@ -8,12 +8,12 @@ WORKDIR /app
 # Backend deps
 COPY backend/package.json backend/package-lock.json ./backend/
 RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
-	sh -lc 'cd backend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci --omit=dev'
+	sh -lc 'cd backend && [ -f /run/secrets/ALL_SECRETS ] && eval "$(base64 -d /run/secrets/ALL_SECRETS)" || true; npm ci --omit=dev'
 
 # Frontend deps
 COPY frontend/package.json frontend/package-lock.json ./frontend/
 RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
-	sh -lc 'cd frontend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci --omit=dev'
+	sh -lc 'cd frontend && [ -f /run/secrets/ALL_SECRETS ] && eval "$(base64 -d /run/secrets/ALL_SECRETS)" || true; npm ci --omit=dev'
 
 # -------- build (dev deps + build outputs) --------
 FROM deps AS build
@@ -25,11 +25,11 @@ COPY frontend ./frontend
 
 # Backend build (ensure dev deps available during build)
 RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
-	sh -lc 'cd backend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci && npm run build'
+	sh -lc 'cd backend && [ -f /run/secrets/ALL_SECRETS ] && eval "$(base64 -d /run/secrets/ALL_SECRETS)" || true; npm ci && npm run build'
 
 # Frontend build
 RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
-	sh -lc 'cd frontend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci && npm run build'
+	sh -lc 'cd frontend && [ -f /run/secrets/ALL_SECRETS ] && eval "$(base64 -d /run/secrets/ALL_SECRETS)" || true; npm ci && npm run build'
 
 # -------- runtime (single container runs both) --------
 FROM node:22-bookworm-slim AS runtime
