@@ -26,10 +26,10 @@ RUN chmod +x /srv/deploy.sh
 COPY --from=flyio /flyctl /usr/bin
 
 # Multi-stage build for Zenbase
-FROM node:20-alpine AS frontend-builder
+# FROM node:20-alpine AS frontend-builder
 
 # Provide flyctl binary for optional use
-COPY --from=flyio /flyctl /usr/bin
+# COPY --from=flyio /flyctl /usr/bin
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
