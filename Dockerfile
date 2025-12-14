@@ -2,7 +2,7 @@
 # Scout-recommended base: node:22-alpine
 
 # -------- deps (runtime deps only) --------
-FROM node:22-alpine@sha256:6e6bd115b0988e62c4ad262e3e19134cab0fc800f4c9f5e6a9fa1a84c9c6eef8 AS deps
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
 # Backend deps
@@ -32,7 +32,7 @@ RUN --mount=type=secret,id=ALL_SECRETS --mount=type=cache,target=/root/.npm \
 	sh -lc 'cd frontend && eval "$(base64 -d /run/secrets/ALL_SECRETS)" && npm ci && npm run build'
 
 # -------- runtime (single container runs both) --------
-FROM node:22-alpine@sha256:6e6bd115b0988e62c4ad262e3e19134cab0fc800f4c9f5e6a9fa1a84c9c6eef8 AS runtime
+FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
