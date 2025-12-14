@@ -26,4 +26,4 @@ echo "Backend healthy; starting frontend"
 
 # Serve built frontend on port 80
 cd /app/frontend
-exec serve -s /app/frontend/dist -l 80
+exec serve -s /app/frontend/dist -l tcp://0.0.0.0:80
