@@ -6,7 +6,7 @@ RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh 
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm run build
 
 COPY frontend/ ./
 # RUN npm run build
