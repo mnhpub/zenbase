@@ -3,6 +3,10 @@ FROM node:20-alpine AS frontend-builder
 
 RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
 
+WORKDIR /app
+
+COPY .phase.json ./
+
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
@@ -10,8 +14,8 @@ COPY frontend/package*.json ./
 RUN npm ci
 
 COPY frontend/ ./
-# RUN npm run build
-CMD ["sh", "-c", "phase run --app \"zenbase.online\" --env \"development\" npm run build"]
+
+RUN phase run --app "zenbase.online" --env "production" npm run build
 
 # Backend stage
 FROM node:20-alpine AS backend-builder
@@ -26,7 +30,12 @@ COPY backend/ ./
 # Final production stage
 FROM node:20-alpine
 
+RUN apk add --no-cache curl && curl -fsSL https://pkg.phase.dev/install.sh | sh -s -- --version 1.21.1
+
 WORKDIR /app
+
+# Copy Phase config
+COPY .phase.json ./
 
 # Copy backend
 COPY --from=backend-builder /app/backend ./backend
